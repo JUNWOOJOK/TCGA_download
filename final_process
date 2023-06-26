@@ -1,0 +1,134 @@
+#!/bin/bash
+
+# 확인할 도구들의 리스트
+tools=("prodigal" "samtools" "megahit" "bbduk.sh" "repair.sh" "bowtie2" "trimmomatic")
+
+# 도구 실행 가능 여부 확인
+for tool in "${tools[@]}"; do
+    if command -v "$tool" >/dev/null 2>&1; then
+        echo "$tool은(는) 설치되어 있습니다."
+    else
+        echo "$tool은(는) 설치되어 있지 않습니다."
+	exit
+    fi
+done
+
+
+
+
+for i in $(ls|grep TCGA)
+do cd $i
+if [ $(ls|grep -E  "fq|human.sam"|wc -l) -gt 0 ]
+then
+echo "$i unmapped.sh already done"
+cd ../
+continue
+fi
+echo "$i unmapped.sh  processing now"
+bash ../unmapped.sh
+echo "$i unmapped.sh completed"
+cd ../
+done
+
+
+
+wait
+
+for i in $(ls|grep TCGA)
+do cd $i
+if [ $(ls|grep -E "f.fq|clean"|wc -l) -gt 0 ]
+then
+echo "$i  proces_bash already done"
+cd ../
+continue
+fi
+echo "$i process_bash processing now"
+bash ../process_bash
+echo "$i process_bash  completed"
+cd ../
+done
+
+
+wait
+
+for i in $(ls|grep TCGA)
+do cd $i
+if [ $(ls|grep "clean"|wc -l) -gt 0 ]
+then
+echo "$i  bbduck_bash already done"
+cd ../
+continue
+fi
+echo "$i bbduck_bash processing now"
+bash ../bbduck_bash
+echo "$i bbduck_bash  completed"
+cd ../
+done
+
+
+
+
+
+
+
+
+
+
+
+wait
+
+
+for i in $(ls|grep TCGA)
+do cd $i
+if [ $(ls|grep human.sam|wc -l) -gt 0 ]
+then
+echo "$i has been already done"
+cd ../
+continue
+fi
+echo "$i bowtie_bash processing now"
+bash ../bowtie_bash
+echo "$i bowtie_bash completed"
+cd ../
+done
+
+echo "bowtie bash completed"
+
+
+
+
+wait
+
+for i in $(ls|grep TCGA)
+do cd $i
+if [ $(ls|grep f_last.fq|wc -l) -gt 0 ]
+then
+echo "$i last_unmapped already done"
+cd ../
+continue
+fi
+echo "$i last_unmapped processing now"
+bash ../last_unmapped_bash
+echo "$i last_unmapped completed"
+cd ../
+done
+
+
+wait
+
+for i in $(ls|grep TCGA)
+do cd $i
+if [ $(ls|grep megahit|wc -l) -gt 0 ]
+then
+echo "$i already done"
+cd ../
+continue
+fi
+echo "$i processing now"
+bash ../megahit_bash
+echo "$i completed"
+cd ../
+done
+
+
+
